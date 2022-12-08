@@ -11,6 +11,10 @@
             error_reporting(E_ALL);
             ini_set('display_errors', 1);
             ini_set('display_startup_errors', 1);
+
+            // error_reporting(0);
+            // ini_set('display_errors', 0);
+            // ini_set('display_startup_errors', 0);
             
             //begin output capture
             ob_start();
@@ -36,29 +40,53 @@
             if($this->data['type'] == 'exception')
             {
                 http_response_code(500);
-                error_log('Exception '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']);
+                error_log(' Exception: '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']);
             }
             else
             {
-                if($this->data['type']==E_ERROR || $this->data['type']==E_USER_ERROR)
+                if($this->data['type']==E_USER_ERROR || $this->data['type']==E_ERROR)
                     http_response_code(500);
 
-                error_log(array_search($this->data['type'], get_defined_constants(true)['Core']).' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']);
+                error_log(' Code:'.$this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']);
+            }
+        }
+
+        //Call all user functions and pass error data to them
+        private function runHandlers()
+        {
+            set_error_handler(function()
+            {
+                echo "well, this is awkward...<br>";
+                error_log('handler bug');
+            }, E_ALL);
+
+            //set_exception_handler(array($this, 'exception_handler'));
+            foreach($this->handlers as $key)
+            {
+                //make sure a bad handler doesn't kill the program
+                try
+                {
+                    call_user_func($key, $this->data);
+                } 
+                catch(Exception $e)
+                {
+                    $this->newEvent('exception', $e->getFile(), $e->getLine(), $e->getMessage());
+                }
             }
         }
 
         //Capture unhandled errors, warnings, notices
         public function error_handler($errorNo, $message, $file, $line)
         {
-            //erase all previous output if errors exist
-            if($errorNo == E_ERROR || $errorNo == E_USER_ERROR) 
+            //If E_ERROR/E_USER_ERROR, erase all previous output
+            if($errorNo == 256 || $errorNo == 1) 
                 ob_end_clean();
 
             $this->newEvent($errorNo, $file, $line, $message);
             $this->runHandlers();
 
-            //kill code if errors exist (or execution continues)
-            if($errorNo == E_ERROR || $errorNo == E_USER_ERROR) 
+            //If error = E_USER_ERROR/E_ERROR, kill code
+            if($errorNo == 256 || $errorNo == 1) 
                 exit();
         }
 
@@ -66,7 +94,7 @@
         public function exception_handler($exception)
         {
             ob_end_clean();
-
+            
             $this->newEvent('exception', $exception->getFile(), $exception->getLine(), $exception->getMessage());
             $this->runHandlers();
 
@@ -89,33 +117,6 @@
                     restore_exception_handler();
                 }
             }
-        }
-
-        //Call all user functions and pass error data to them
-        private function runHandlers()
-        {   
-            //catch errors/exceptions from buggy handlers and log them
-            set_error_handler(function($errorNo, $message, $file, $line)
-            {
-                http_response_code(500);
-                $this->newEvent($errorNo, $file, $line, $message);
-                error_log(date('[Y-n-d G:i:s e]').' - '.array_search($this->data['type'], get_defined_constants(true)['Core']).' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
-                exit('Something went wrong. Check logs.<br>');
-            }, E_ALL);
-            set_exception_handler(function($exception)
-            {
-                $this->newEvent('exception', $exception->getFile(), $exception->getLine(), $exception->getMessage());
-                error_log(date('[Y-n-d G:i:s e]').' - Exception '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
-                exit('Something went wrong. Check logs.<br>');
-            });
-
-            //call each handler function
-            foreach($this->handlers as $key)
-                call_user_func($key, $this->data);
-
-            //set handlers back to what they were
-            set_error_handler(array($this, 'error_handler'), E_ALL); 
-            set_exception_handler(array($this, 'exception_handler')); 
         }
     }
 ?>

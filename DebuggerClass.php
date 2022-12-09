@@ -17,9 +17,9 @@
         }
 
         //Adds a new callback function to handle error data
-        public function addHandler($handlerFunc)
+        public function addHandler($handler)
         {
-            array_push($this->handlers, $handlerFunc);
+            array_push($this->handlers, $handler);
         }
 
         //Unified method to accept notices, warnings, errors, and exceptions

@@ -86,7 +86,7 @@
         //Call all user functions and pass error data to them
         private function runHandlers()
         {   
-            //catch errors/exceptions from buggy handlers and log them
+            //catch errors from buggy handlers and log them
             set_error_handler(function($errorNo, $message, $file, $line)
             {
                 http_response_code(500);
@@ -94,20 +94,23 @@
                 error_log(date('[Y-n-d G:i:s e]').' - '.$this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
                 exit('Something went wrong. Check logs.<br>');
             }, E_ALL);
-            set_exception_handler(function($exception)
+
+            //catch unhandled exceptions from buggy handlers and log them
+            try
             {
-                $this->newEvent('EXCEPTION', $exception->getFile(), $exception->getLine(), $exception->getMessage());
+                //call each handler function
+                foreach($this->handlers as $key)
+                    call_user_func($key, $this->data);                
+            }
+            catch(Exception $e)
+            {
+                $this->newEvent('EXCEPTION', $e->getFile(), $e->getLine(), $e->getMessage());
                 error_log(date('[Y-n-d G:i:s e]').' - '.$this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
                 exit('Something went wrong. Check logs.<br>');
-            });
-
-            //call each handler function
-            foreach($this->handlers as $key)
-                call_user_func($key, $this->data);
-
-            //set handlers back to what they were
-            set_error_handler(array($this, 'error_handler'), E_ALL); 
-            set_exception_handler(array($this, 'exception_handler')); 
+            }
+            
+            //set handler back to previous state
+            set_error_handler(array($this, 'error_handler'), E_ALL);         
         }
     }
 ?>

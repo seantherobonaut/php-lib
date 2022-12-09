@@ -33,18 +33,10 @@
             $this->data['backtrace'] = debug_backtrace();
 
             //log to php console
-            if($this->data['type'] == 'exception')
-            {
+            if($this->data['type']=='E_ERROR' || $this->data['type']=='E_USER_ERROR' || $this->data['type']=='EXCEPTION')
                 http_response_code(500);
-                error_log('Exception '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']);
-            }
-            else
-            {
-                if($this->data['type']==E_ERROR || $this->data['type']==E_USER_ERROR)
-                    http_response_code(500);
 
-                error_log(array_search($this->data['type'], get_defined_constants(true)['Core']).' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']);
-            }
+            error_log($this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']);
         }
 
         //Capture unhandled errors, warnings, notices
@@ -54,7 +46,7 @@
             if($errorNo == E_ERROR || $errorNo == E_USER_ERROR) 
                 ob_end_clean();
 
-            $this->newEvent($errorNo, $file, $line, $message);
+            $this->newEvent(array_search($errorNo, get_defined_constants(true)['Core']), $file, $line, $message);
             $this->runHandlers();
 
             //kill code if errors exist (or execution continues)
@@ -67,7 +59,7 @@
         {
             ob_end_clean();
 
-            $this->newEvent('exception', $exception->getFile(), $exception->getLine(), $exception->getMessage());
+            $this->newEvent('EXCEPTION', $exception->getFile(), $exception->getLine(), $exception->getMessage());
             $this->runHandlers();
 
             exit();
@@ -98,14 +90,14 @@
             set_error_handler(function($errorNo, $message, $file, $line)
             {
                 http_response_code(500);
-                $this->newEvent($errorNo, $file, $line, $message);
-                error_log(date('[Y-n-d G:i:s e]').' - '.array_search($this->data['type'], get_defined_constants(true)['Core']).' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
+                $this->newEvent(array_search($errorNo, get_defined_constants(true)['Core']), $file, $line, $message);
+                error_log(date('[Y-n-d G:i:s e]').' - '.$this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
                 exit('Something went wrong. Check logs.<br>');
             }, E_ALL);
             set_exception_handler(function($exception)
             {
-                $this->newEvent('exception', $exception->getFile(), $exception->getLine(), $exception->getMessage());
-                error_log(date('[Y-n-d G:i:s e]').' - Exception '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
+                $this->newEvent('EXCEPTION', $exception->getFile(), $exception->getLine(), $exception->getMessage());
+                error_log(date('[Y-n-d G:i:s e]').' - '.$this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
                 exit('Something went wrong. Check logs.<br>');
             });
 

@@ -1,4 +1,5 @@
 <?php
+    //Loads Class/Interface/Abastract from an array pulled pulled from a dependency file
 	class DependencyManager
 	{
 		private $listFile = '';
@@ -10,19 +11,20 @@
 			$this->listFile = $listFile;
 		}
 
-		//Load files required by dependencies
+		//Load file required by Class/Interface/Abastract
 		private function loadDependency($callName) 
 		{		
 			require $this->dependencies[$callName];	
 		}
 
-		public function setSearchPaths(Array $paths)
+        //Add a directory to find loadable files in
+		public function addSearchPath($path)
 		{
-			$this->searchPaths = $paths;
+            array_push($this->searchPaths, $path);		
 		}
 
 		//Register autoload function
-		public function enableLoader($state)
+		public function enable($state)
 		{
 			if($state==true)
 			{
@@ -55,7 +57,9 @@
 						$resultArray = new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)), $needle, RecursiveRegexIterator::GET_MATCH);
 						foreach($resultArray as $row)
 							array_push($files, str_replace("\\", "/", $row[0]));																	
-					}				
+					}		
+                    else
+                        trigger_error('directory '.$path.' for autoloader does not exist', E_USER_WARNING);
 				}
 			}
 
@@ -77,9 +81,9 @@
 			//Convert array into php code string to be stored in a file
 			$output = null;
 			foreach($dependencies as $key => $value)   
-				$output .= "\t\t'$key' => '$value',\n";
+				$output .= "        '$key' => '$value',\n";
 			$output = substr($output, 0, -2); //erases the last newline and comma
-			$output = "<?php\n\t\$dependencyList = array\n\t(\n$output\n\t);\n?>\n";
+			$output = "<?php\n    \$dependencyList = array\n    (\n$output\n    );\n?>\n";
 				
 			//Save output to file
 			$listFile = fopen($this->listFile, 'w');

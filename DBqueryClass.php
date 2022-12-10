@@ -43,10 +43,10 @@
             else
             {
                 if(empty($this->handlers))
-                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                    trigger_error('runQuery() failed: DBQuery is missing a PDO statment!', E_USER_WARNING);
                 else
                     foreach($this->handlers as $key)
-                        call_user_func($key, 'DBQuery is missing a PDO statment!');
+                        call_user_func($key, 'runQuery() failed: DBQuery is missing a PDO statment!');
             }
         }
 
@@ -58,10 +58,10 @@
             else
             {
                 if(empty($this->handlers))
-                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                    trigger_error('rowCount() failed: DBQuery is missing a PDO statment!', E_USER_WARNING);
                 else
                     foreach($this->handlers as $key)
-                        call_user_func($key, 'DBQuery is missing a PDO statment!');
+                        call_user_func($key, 'rowCount() failed: DBQuery is missing a PDO statment!');
 
                 return 0;
             }
@@ -75,10 +75,10 @@
             else
             {
                 if(empty($this->handlers))
-                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                    trigger_error('fetch() failed: DBQuery is missing a PDO statment!', E_USER_WARNING);
                 else
                     foreach($this->handlers as $key)
-                        call_user_func($key, 'DBQuery is missing a PDO statment!');
+                        call_user_func($key, 'fetch() failed: DBQuery is missing a PDO statment!');
 
                 return Array();
             }
@@ -92,10 +92,10 @@
             else
             {
                 if(empty($this->handlers))
-                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                    trigger_error('fetchAll() failed: DBQuery is missing a PDO statment!', E_USER_WARNING);
                 else
                     foreach($this->handlers as $key)
-                        call_user_func($key, 'DBQuery is missing a PDO statment!');
+                        call_user_func($key, 'fetchAll() failed: DBQuery is missing a PDO statment!');
 
                 return Array();
             }

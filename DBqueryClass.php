@@ -3,12 +3,12 @@
     class DBquery
     {   
         private $statement=null;
-        private $loggers = array();
-
-        //Add a logger for database reporting to process to use
-        public function addLogger(DBLoggerInterface $logger)
+        private $handlers = array();
+        
+        //Add a handler for database reporting to process to use
+        public function addHandler($handler)
         {
-            array_push($this->loggers, $logger);
+            array_push($this->handlers, $handler);
         }
 
         //Accept and store PDO statement for use in queries
@@ -18,7 +18,7 @@
         }
 
         //Pass values (if any) to PDO statement and run the query if statement exists
-        public function runQuery($valuesArray = null)
+        public function runQuery(Array $valuesArray = null)
         {
             if($this->statement)
             {
@@ -35,9 +35,18 @@
                     $errorCode = $this->statement->errorCode();
                     $error = $this->statement->errorInfo();
 
-                    foreach($this->loggers as $key)
-                        $key->run($errorCode.' '.$error[2]); 
+                    //Call handlers, if empty, then PDO will trigger warnings for us
+                    foreach($this->handlers as $key)
+                        call_user_func($key, $errorCode.' '.$error[2]);
                 }
+            }
+            else
+            {
+                if(empty($this->handlers))
+                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                else
+                    foreach($this->handlers as $key)
+                        call_user_func($key, 'DBQuery is missing a PDO statment!');
             }
         }
 
@@ -47,7 +56,15 @@
             if($this->statement)
                 return $this->statement->rowCount();
             else
+            {
+                if(empty($this->handlers))
+                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                else
+                    foreach($this->handlers as $key)
+                        call_user_func($key, 'DBQuery is missing a PDO statment!');
+
                 return 0;
+            }
         }
 
         //Return each result or an empty array
@@ -56,7 +73,15 @@
             if($this->statement)
                 return $this->statement->fetch(PDO::FETCH_ASSOC);
             else
+            {
+                if(empty($this->handlers))
+                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                else
+                    foreach($this->handlers as $key)
+                        call_user_func($key, 'DBQuery is missing a PDO statment!');
+
                 return Array();
+            }
         }
 
         //Return entire result set or an empty array 
@@ -65,7 +90,15 @@
             if($this->statement)
                 return $this->statement->fetchAll(PDO::FETCH_ASSOC);                  
             else
+            {
+                if(empty($this->handlers))
+                    trigger_error('DBQuery is missing a PDO statment!', E_USER_WARNING);
+                else
+                    foreach($this->handlers as $key)
+                        call_user_func($key, 'DBQuery is missing a PDO statment!');
+
                 return Array();
+            }
         }
     }
 ?>

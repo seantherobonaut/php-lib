@@ -9,6 +9,11 @@
 		public function __construct($listFile)
 		{
 			$this->listFile = $listFile;
+
+            //Ensure the folder holding the list file exists
+            $path = pathinfo($listFile)['dirname'];
+            if(!file_exists($path))
+                mkdir($path);
 		}
 
 		//Load file required by Class/Interface/Abastract

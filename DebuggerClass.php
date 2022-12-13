@@ -7,10 +7,10 @@
 
         public function __construct()
         {
-            //turn on all error reporting
-            error_reporting(E_ALL);
-            ini_set('display_errors', 1);
-            ini_set('display_startup_errors', 1);
+            //turn off all error reporting
+            error_reporting(0);
+            ini_set('display_errors', 0);
+            ini_set('display_startup_errors', 0);
             
             //begin output capture
             ob_start();
@@ -92,7 +92,7 @@
                 http_response_code(500);
                 $this->newEvent(array_search($errorNo, get_defined_constants(true)['Core']), $file, $line, $message);
                 error_log(date('[Y-n-d G:i:s e]').' - '.$this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
-                exit('Something went wrong. Check logs.<br>');
+                exit('An internal error has occurred. Please try again later.<br>');
             }, E_ALL);
 
             //catch unhandled exceptions from buggy handlers and log them
@@ -106,7 +106,7 @@
             {
                 $this->newEvent('EXCEPTION', $e->getFile(), $e->getLine(), $e->getMessage());
                 error_log(date('[Y-n-d G:i:s e]').' - '.$this->data['type'].' '.$this->data['msg'].' -> '.$this->data['file'].'@line:'.$this->data['line']."\n", 3, 'errors.log');
-                exit('Something went wrong. Check logs.<br>');
+                exit('An internal error has occurred. Please try again later.<br>');
             }
             
             //set handler back to previous state

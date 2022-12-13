@@ -48,9 +48,9 @@
         {       
             $query = new DBquery;
             
-            //If credentials are valid, set the queries connection and pass on any handlers
+            //If credentials are valid, set the query's statement and pass on any handlers
             if($this->conn)
-                $query->setConnection($this->conn->prepare($sql));
+                $query->setStatement($this->conn->prepare($sql));
             else
             {
                 //If no handlers present, issue standard warning

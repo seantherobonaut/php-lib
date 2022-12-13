@@ -12,7 +12,7 @@
         }
 
         //Accept and store PDO statement for use in queries
-        public function setConnection(PDOStatement $statement)
+        public function setStatement(PDOStatement $statement)
         {
             $this->statement = $statement;
         }

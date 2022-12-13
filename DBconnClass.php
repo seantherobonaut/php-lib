@@ -68,12 +68,13 @@
             return $query;
         }  
 
-        //Return the name of the currently connected database
+        //Get the name of the currently connected database
         public function getDBname()
         {
             return $this->dbname;
         }     
 
+        //Get a list of tables contained in the database (array)
         public function getTables()
         {
             $resultArray = array();
@@ -101,6 +102,7 @@
             return $resultArray;
         }
 
+        //Check if a table exists in the database (true/false)
         public function table_exists($tableName)
         {		
             $result = false;
@@ -124,7 +126,8 @@
 
             return $result;
         }
-        
+
+        //Get an array of the table's columns
         public function getColumns($tableName)
         {
             $resultArray = array();

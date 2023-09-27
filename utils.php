@@ -1,4 +1,4 @@
-<?
+<?php
     /*File with a collection of useful functions*/
 
     //Adds content to a file, ensures folder exists
